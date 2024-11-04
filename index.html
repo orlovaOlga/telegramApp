@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Крестики-Нолики</title>
+    <style>
+        body { font-family: Arial, sans-serif; display: flex; justify-content: center; align-items: center; height: 100vh; margin: 0; }
+        #board { display: grid; grid-template-columns: repeat(3, 100px); grid-gap: 5px; }
+        .cell { width: 100px; height: 100px; display: flex; justify-content: center; align-items: center; font-size: 2em; border: 1px solid #333; cursor: pointer; }
+    </style>
+</head>
+<body>
+<div id="board"></div>
+<button onclick="resetGame()">Начать заново</button>
+
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<script>
+    // Telegram Web App API
+    const tg = window.Telegram.WebApp;
+    tg.expand();
+
+    let board = ['', '', '', '', '', '', '', '', ''];
+    let currentPlayer = 'X';
+
+    // Функция для отрисовки игрового поля
+    function renderBoard() {
+        const boardElement = document.getElementById('board');
+        boardElement.innerHTML = '';
+        board.forEach((cell, index) => {
+            const cellElement = document.createElement('div');
+            cellElement.className = 'cell';
+            cellElement.textContent = cell;
+            cellElement.onclick = () => makeMove(index);
+            boardElement.appendChild(cellElement);
+        });
+    }
+
+    // Функция для выполнения хода
+    function makeMove(index) {
+        if (board[index] === '') {
+            board[index] = currentPlayer;
+            if (checkWinner()) {
+                tg.sendData(`Победитель: ${currentPlayer}`);
+                alert(`Победитель: ${currentPlayer}`);
+                resetGame();
+            } else if (board.every(cell => cell !== '')) {
+                tg.sendData('Ничья');
+                alert('Ничья');
+                resetGame();
+            } else {
+                currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            }
+            renderBoard();
+        }
+    }
+
+    // Проверка на победителя
+    function checkWinner() {
+        const winPatterns = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
+        ];
+        return winPatterns.some(pattern => {
+            const [a, b, c] = pattern;
+            return board[a] && board[a] === board[b] && board[a] === board[c];
+        });
+    }
+
+    // Сброс игры
+    function resetGame() {
+        board = ['', '', '', '', '', '', '', '', ''];
+        currentPlayer = 'X';
+        renderBoard();
+    }
+
+    renderBoard();
+</script>
+</body>
+</html>
